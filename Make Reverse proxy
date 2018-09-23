@@ -1,0 +1,24 @@
+* AWS를 이용한 Nodejs Nginx 리버스 프록시 서버 만들기
+1. AWS에서 EC2 인스턴스를 생성한다.
+2. Putty를 이용해 생성된 인스턴스에 접속한다 (https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/UserGuide/putty.html)
+  - 탄력적 IP를 생성한다(인스턴스를 재실행 할 때 마다 IP가 변경되므로 고정할당 해주어야한다.)
+3. Nginx와 Nodejs 설치
+4. /etc/nginx/nginx.conf 수정
+`server {
+...
+...
+  loctaion / {
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-NginX-Proxy true;
+    proxy_pass http://'private_IP':'NodePortNum'/;
+    proxy_redirect off;
+  }
+  
+...
+}`
+
+5. 인스턴스의 인바운드 규칙에서 Nodejs 서버의 포트번호를 반드시 해제해주어야한다.
+  - 보안상의 문제 (외부에서 내부의 URI를 노출시키지않는다 ==> 리버스 프록시를 사용함으로써 보안성 강화)
+6. 접속할 때 인스턴스의 Public IP로 접근하면 Nginx -> Nodejs로 요청이 전달되어 Node의 서버가 전송한 request가 보여진다.
